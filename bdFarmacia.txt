@@ -1,0 +1,124 @@
+OBSERVACIONES:
+	- Campos Peso. Debería haber una tabla definida.
+	- Tabla MEDICAMENTO. usar RegSan de LABORATORIO como pk
+	- Relacón de tablas MEDICAMENTO - DTGRMED - GR
+	- Definir qué tabla depende de otra TP y DetMed
+	- Donde interviene EMPLEADO
+	- GuiaRemision y Detalle son relacion 1 a 1
+	- Donde interviene tabla ALMACEN
+	- MED-01, PA-01, MED-DT-01
+________________________________________________________________
+-- CREACIÓN DE TABLAS
+	-- Tablas Independientes
+create table Empresa(
+	RUC 		nvarchar(20) 	primary key,
+	RazónSocial 	nvarchar(40) 	not null,
+	Telefono 	nvarchar(10),
+	Dirección 	nvarchar(20),
+	Descripcion 	nvarchar(20)		
+) 
+
+create table Persona(
+	DNI 		nvarchar(8) 	primary key,
+	Nombre 		nvarchar(25) 	not null,
+	Apellido 	nvarchar(20)	not null,
+	FecNac 		date 		not null,
+	Genero 		char(1)	in('F','M') not null,
+	Direccion	nvarchar(20)	not null
+)
+
+create table GuiaRemision(
+	NroGuia 	nvarchar(20) 	primary key,
+	PuntoPartida 	nvarchar(20) 	not null,
+	PuntoLLegada	nvarchar(20) 	not null,
+	FecEmision 	date		not null,
+	FecInicTraslado date 		not null,
+	MotTraslado	nvarchar(20)	not null	
+)
+
+create table UnidadMedida(
+	Id 		number		primary key identity(1,1),
+	Descripcion 	nvarchar(10)	not null
+)
+	--Caso Observado
+create table TipoPresentacion(
+	Id		number 		primary key identity(1,1),
+	Nombre		nvarchar(20)	not null,
+	Descripcion	nvarchar(30)	not null
+)
+	-- Tablas Dependientes
+create table Transporte(
+	RUC 		nvarchar(20) 	references Empresa(RUC),
+	Id 		number 		primary key,
+	Placa 		nvarchar(20)	not null
+)
+create table Transportista(
+	DNI 		nvarchar(8)	references	Persona(DNI),
+	NroLicencia	nvarchar(15)	not null
+)
+create table Laboratorio(
+	RUC		nvarchar(20) 	references Empresa(RUC),
+	RegSanitario	nvarchar(20) 	primary key
+)
+--Caso Observado
+create table Empleado(
+	TipoEmpleado 	nvarchar(20) 	not null,
+	Turno		nvarchar(20)	not null,
+	Especialidad	nvarchar(20)	not null,
+	Usuario		nvarchar(20)	unique	not null,
+	Clave		nvarchar(20)	not null
+	DNI		nvarchar(20)	references Persona(DNI)	
+)
+
+create table dtGR-MED(
+	NroGuiaRemision nvarchar(20)	references GuiaRemision(NroGuia),
+	IdDt 		number	primary key	identity(1,1),
+	Cantidad	nvarchar(20)	not null,
+	PesoTotal	--		,
+	Lote		nvarchar(20)	not null,
+	Descripcion	nvarchar(20)	not null
+)
+Create table Factura(
+	IdDt		number		references dtGR-MED(IdDt),
+	CostoUnitario	,
+	CostoTotal	,
+	IGV
+	SubTotal,
+)
+create table Medicamento(
+	CodMed		nvarchar(20)	primary key,
+	Nombre		nvarchar(20)	not null,
+	NomLaboratorio	nvarchar(20) 	not null,
+	
+)
+create table dtMED(
+	CodMed		nvarchar(20) 	references Medicamento(CodMed),
+	CodPre		number		references TipoPresentacion(Id),
+	CodDtMed	number		primary key	identity(1,1),
+	Psicotrópico	float,
+	PesoUnitario	--Observacion,
+	FecVenc		date 		not null,
+	Descripcion	nvarchar(20)	not null
+)
+create table Posologia(
+	CodDtMed	number		references dtMED(CodDtMed),
+	Dosis		nvarchar(20)	not null,
+	Indicaciones	nvarchar(20)	not null
+)
+create table PrecioActual(
+	CodDtMed	number		references dtMED(CodDtMed),
+	Precio		--,
+	Estado		--
+)
+create table	Componentes(
+	CodDtMed	number		references dtMED(CodDtMed),
+	Nombre		nvarchar(20) 	not null,
+	Tipo		nvarchar(20)	not null,
+	Cantidad	--		not null,
+	CodUniMedida	number		references UnidadMedida(Id)
+)
+create table Almacen(
+	CodDtMed	number		references dtMED(CodDtMed),
+	StockActual	nvarchar(20	not null,
+	Ubicacion	nvarchar(20)	not null
+)
